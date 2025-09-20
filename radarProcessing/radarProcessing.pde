@@ -8,16 +8,14 @@ int iAngle;
 int iDistance;
 
 void setup() {
-    size(1300, 800);
+    fullScreen(); // <-- aqui em vez de size(1300, 800);
+
     smooth();
     
-    
     println("Portas seriais disponíveis:");
-    printArray(Serial.list());//mostrar todas as portas seriais disponíveis 
+    printArray(Serial.list());
     
-    // verificar se há algum arduino conectado
     if (Serial.list().length > 0) {
-        
         String portName = Serial.list()[0];
         println("porta conectada: " + portName);
         myPort = new Serial(this, portName, 9600);
@@ -27,8 +25,9 @@ void setup() {
         println("Não encontrou a porta");
     }
     
-    orcFont = loadFont("OCRAExtended-30.vlw"); //usado apenas para salvar a fonte usada na imagem
+    orcFont = loadFont("OCRAExtended-30.vlw");
 }
+
 
 void draw() {
     fill(98, 245, 31);
@@ -114,10 +113,12 @@ void DrawLine() {
     stroke(30, 250, 60);
     translate(width/2, 0.926 * height);
     
-    float angle = radians(iAngle);
-    int x = int(+0.88 * height * cos(angle));
-    int y = int(-0.88 * height * sin(angle));
-    line(0, 0, x, y);
+     for (int offset = 0; offset <= 10; offset++) {
+        float angle = radians(iAngle - offset);
+        int x = int(+0.88 * height * cos(angle));
+        int y = int(-0.88 * height * sin(angle));
+        line(0, 0, x, y);
+    }
     popMatrix();
 }
 
