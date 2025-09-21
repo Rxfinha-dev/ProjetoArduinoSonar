@@ -1,27 +1,36 @@
-#include<Servo.h>
+#include <Servo.h>
 
-// set ouptut pins
+// pinos do ultrassom
 const int TriggerPin = 11;
 const int EchoPin = 12;
+
+// pino do servo
 const int motorSignalPin = 9;
 
-// starting loaction
+// pino do buzzer (D4)
+const int buzzerPin = 4;
+
+// posição inicial do servo
 const int startAngle = 90;
 
-// rotation limits
+// limites do servo
 const int minimumAngle = 6;
 const int maximumAngle = 175;
 
-// speed
+// velocidade
 const int degreesPerCycle = 1;
 
-// Library class instance
+// distância limite para ativar o buzzer (em cm)
+const int detectionThreshold = 20;
+
+// objeto da biblioteca Servo
 Servo motor;
 
 void setup(void) 
 {
     pinMode(TriggerPin, OUTPUT);
     pinMode(EchoPin, INPUT);
+    
     motor.attach(motorSignalPin);
     Serial.begin(9600);
 }
@@ -33,14 +42,26 @@ void loop(void)
 
     // move motor
     motor.write(currentAngle);
-    //delay(10);
-    // calculate the distance from the sensor, and write the valu with locqtion to serial
-    SerialOutput(currentAngle, CalculateDistance());
+    delay(10);
 
-    // update motor location
+    // calcula a distância
+    int distance = CalculateDistance();
+
+    // mostra no serial
+    SerialOutput(currentAngle, distance);
+
+    // verifica se tem objeto perto
+    if (distance > 0 && distance < detectionThreshold) {
+        // faz um beep de 100 ms em 1000 Hz
+        tone(buzzerPin, 1000, 100);
+    } else {
+        noTone(buzzerPin); // garante que fica desligado quando não há nada
+    }
+
+    // atualiza posição do servo
     currentAngle += motorRotateAmount;
 
-    // if the motor has reached the limits, change direction
+    // inverte direção ao chegar no limite
     if(currentAngle <= minimumAngle || currentAngle >= maximumAngle) 
     {
         motorRotateAmount = -motorRotateAmount;
@@ -49,18 +70,24 @@ void loop(void)
 
 int CalculateDistance(void)
 {
-    // trigger the ultrasonc senosr and record the time taken reflect
+    // envia pulso de 10us
+    digitalWrite(TriggerPin, LOW);
+    delayMicroseconds(2);
     digitalWrite(TriggerPin, HIGH);
     delayMicroseconds(10);
     digitalWrite(TriggerPin, LOW);
-    long duration = pulseIn(EchoPin, HIGH);
-    // convert this duration to a distance
+
+    // mede tempo de resposta
+    long duration = pulseIn(EchoPin, HIGH, 30000); // timeout 30ms (~5m)
+    
+    if (duration == 0) return -1; // sem leitura válida
+
+    // converte tempo em distância (cm)
     float distance = duration * 0.017F;
     return int(distance);
 }
 
 void SerialOutput(const int angle, const int distance)
 {
-    // convert the angle and distance to a string and serial print
     Serial.println(String(angle) + "," + String(distance));
 }
