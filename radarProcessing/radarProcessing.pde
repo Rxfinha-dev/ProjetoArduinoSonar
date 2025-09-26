@@ -147,11 +147,21 @@ void DrawText() {
   textSize(40);
   text("Object: " + (iDistance > 40 ? "Out of Range" : "In Range"), 0.125 * width, 0.9723 * height);
   text("Angle: " + iAngle + " °", 0.52 * width, 0.9723 * height);
-  text("Distance: ", 0.74 * width, 0.9723 * height);
 
+  // Texto fixo "Distance:"
+  textAlign(LEFT);
+  text("Distance:", 0.74 * width, 0.9723 * height);
+
+  // Número alinhado à direita
   if (iDistance < 40) {
-    text(" " + iDistance + " cm", 0.775 * width, 0.9723 * height);
+    textAlign(RIGHT);
+    text(iDistance + " cm", width - 20, 0.9723 * height);
+  } else {
+    textAlign(RIGHT);
+    text("Out", width - 20, 0.9723 * height);
   }
+
+  textAlign(LEFT); // reset para não afetar outros textos
 
   textSize(25);
   fill(98, 245, 60);
